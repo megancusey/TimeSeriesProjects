@@ -13,7 +13,7 @@ library(fpp2)
 
     autoplot(retail.data.ts)
 ##    a. Why is multiplicative seasonality necessary for this
-##       series?
+##       series?  
 
         retail.data.ts.additive <- decompose(plastics, type = "additive")
         retail.data.ts.multiplicative <- decompose(plastics, type = "multiplicative")
