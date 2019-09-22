@@ -1,27 +1,27 @@
 library(timeDate)
-splitDataIntoTestTrain <- function(original.data, frequency) {
+##splitDataIntoTestTrain <- function(original.data, frequency) {
 
-    number.of.rows.original <- nrow(original.data)
+##    number.of.rows.original <- nrow(original.data)
 
-    number.of.rows.test <- as.integer(number.of.rows.original * .2)
+##    number.of.rows.test <- as.integer(number.of.rows.original * .2)
 
-    number.of.rows.train <- as.integer(number.of.rows.original * .8)
+##    number.of.rows.train <- as.integer(number.of.rows.original * .8)
 
-    if ((number.of.rows.original - number.of.rows.test - number.of.rows.train) != 0) {
-        number.of.rows.train = number.of.rows.train + (number.of.rows.original-number.of.rows.test-number.of.rows.train)
-    }
+##    if ((number.of.rows.original - number.of.rows.test - number.of.rows.train) != 0) {
+##        number.of.rows.train = number.of.rows.train + (number.of.rows.original-number.of.rows.test-number.of.rows.train)
+##    }
 
-    train.data <- head(original.data, number.of.rows.train)
+##    train.data <- head(original.data, number.of.rows.train)
 
-    test.data <- head(original.data, number.of.rows.test)
-    train.data.start <- data.matrix(head(train.data[1],1))
+##    test.data <- head(original.data, number.of.rows.test)
+##    train.data.start <- data.matrix(head(train.data[1],1))
 
-    as.month(train.data.start$`ï..Month.Year`)
+##    as.month(train.data.start$`ï..Month.Year`)
 
-    list <- c(number.of.rows.test,number.of.rows.train)
+##    list <- c(number.of.rows.test,number.of.rows.train)
 
-    return (list)
-}
+##    return (list)
+##}
 
 findBenchmarkMethod <- function(myts.train, myts.test, myh) {
     ## Simple, Baseline approaches:
@@ -80,9 +80,24 @@ ExponentialSmoothingMethods <- function(myts.train, myts.test, myh) {
   ## Simple Exponential Smoothing
   forecast.ses.method <- ses(myts.train, h=myh)
   
-  ## HOLT
+  ## HOLT LINEAR
+  forecast.holt.linear.method <- holt(myts.train, h=myh)
   
+  ## HOLT LINEAR DAMPED
+  forecast.holt.linear.damped.method <- holt(myts.train, h=myh)
   
+  ## HOLT SEASONAL Additive
+  forecast.holt.seasonal.additive <- hw(myts.train, h=myh, seasonal="additive")
+  
+  ## HOLT SEASONAL Multiplicative
+  forecast.holt.seasonal.multiplicative <- hw(myts.train, h=myh, seasonal="multiplicative")
+  
+  ## HOLT SEASONAL Additive Damped
+  forecast.holt.seasonal.additive.damped <- hw(myts.train, h=myh, seasonal="additive", damped=TRUE)
+  
+  ## HOLT SEASONAL Multiplicative Damped
+  forecast.holt.seasonal.multiplicative.damped <- hw(myts.train, h=myh, seasonal="multiplicative", damped=TRUE)
+
   ## ETS  
   ets.object <- ets(revenue.smoothed.outlier.seasadj.train.ts)
   forecast.ets.method <- forecast(object=myts.train,model=ets.object, h=myh)
@@ -90,20 +105,34 @@ ExponentialSmoothingMethods <- function(myts.train, myts.test, myh) {
   autoplot(myts.train) +
     autolayer(myts.test, series = "Observed Values") +
     autolayer(forecast.ses.method, series = "Simple Exponential Smoothing Method", PI = FALSE) +
+    autolayer(forecast.holt.linear.method, series = "Holt Linear Method", PI = FALSE) +
+    autolayer(forecast.holt.linear.damped.method, series = "Holt Linear Method Damped", PI = FALSE) +
+    autolayer(forecast.holt.seasonal.additive, series = "Holt Seasonal Additive", PI = FALSE) +
+    autolayer(forecast.holt.seasonal.multiplicative, series = "Holt Seasonal Multiplicative", PI = FALSE) +
+    autolayer(forecast.holt.seasonal.additive.damped, series = "Holt Seasonal Additive Damped", PI = FALSE) +
+    autolayer(forecast.holt.seasonal.multiplicative.damped, series = "Holt Seasonal Multiplicative Damped", PI = FALSE) +    
     autolayer(forecast.ets.method, series = "ETS Method", PI = FALSE)
   
 
   ##revenue.test.ts
   forecast.ses.method.rmse <- as.numeric(accuracy(forecast.ses.method, myts.test)[, 'RMSE']['Test set'])
+  forecast.holt.linear.method <- as.numeric(accuracy(forecast.holt.linear.method, myts.test)[, 'RMSE']['Test set'])
+  forecast.holt.linear.damped.method <- as.numeric(accuracy(forecast.holt.linear.damped.method, myts.test)[, 'RMSE']['Test set'])
+  forecast.holt.seasonal.additive <- as.numeric(accuracy(forecast.holt.seasonal.additive, myts.test)[, 'RMSE']['Test set'])
+  forecast.holt.seasonal.multiplicative <- as.numeric(accuracy(forecast.holt.seasonal.multiplicative, myts.test)[, 'RMSE']['Test set'])
+  forecast.holt.seasonal.additive.damped <- as.numeric(accuracy(forecast.holt.seasonal.additive.damped)[, 'RMSE']['Test set'])
+  forecast.holt.seasonal.multiplicative.damped <- as.numeric(accuracy(forecast.holt.seasonal.multiplicative.damped, myts.test)[, 'RMSE']['Test set'])
   forecast.ets.method.rmse <- as.numeric(accuracy(forecast.ets.method, myts.test)[, 'RMSE']['Test set'])
   
   data = list(forecast.ses.method.rmse, forecast.ets.method.rmse)
   column.names <- "RMSE"
-  row.names <- c("SES Method", "ETS Method")
+  row.names <- c("SES Method", "ETS Method","Holt Linear Method", "Holt Linear Method Damped", 
+                 "Holt Seasonal Additive", "Holt Seasonal Multiplicative", "Holt Seasonal Additive Damped", 
+                 "Holt Seasonal Multiplicative Damped")
   matrix.names <- c("Exponential Smoothing Methods")
   
   # Take these vectors as input to the array.
-  result <- array(data = data, dim = c(2, 1, 1), dimnames = list(row.names, column.names,
+  result <- array(data = data, dim = c(8, 1, 1), dimnames = list(row.names, column.names,
                                                                  matrix.names))
   
   return (result)
