@@ -38,6 +38,7 @@ revenue.smoothed.outlier.ts.seasadj <- seasadj(revenue.smoothed.outlier.ts.stl)
 autoplot(revenue.original.ts.stl)
 autoplot(revenue.smoothed.outlier.ts.stl)
 
+
 ## Explore Data 
 
 ## Seasonal Plots
@@ -124,5 +125,7 @@ exponential.smoothing.methods.smoothing.outlier
 ## STL Seasonally Adjusted Smoothed Outlier
 exponential.smoothing.methods.smoothing.outlier.seasadj <- ExponentialSmoothingMethods (revenue.smoothed.outlier.seasadj.train.ts,revenue.smoothed.outlier.seasadj.test.ts, 12)
 exponential.smoothing.methods.smoothing.outlier.seasadj
+
+## Simple drift method did better than the more complex exponential smoothing methods.
 
 rm(list = ls())
