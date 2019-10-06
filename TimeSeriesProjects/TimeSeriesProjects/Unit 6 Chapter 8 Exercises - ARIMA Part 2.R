@@ -94,23 +94,53 @@ rm(list = ls())
 ## The forecast points have a linear upward trend but the prediction intervals
 ## get increasingly bigger.
         
+        
 ## 9. For the usgdp series:
       autoplot(usgdp)
       
-##  a. If necessary, frind a suitable Box-Cox transformation
+##  a. If necessary, find a suitable Box-Cox transformation
 ##     for the data
+      
+      ## De-trend series and reduce variances
+      autoplot(BoxCox(usgdp, BoxCox.lambda(usgdp)))
 ##
 ##  b. Fit a suitable ARIMA model to the transformed data
 ##     using auto.arima();
-##
+      
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% auto.arima()
+##  Model chosen: ARIMA(2,1,0) with drift AICc = -114.94 , AIC = -115.11
 ##  c. Try some other plausible models by experimenting with 
 ##     the orders chosen;
 ##
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% ur.kpss() %>% summary()
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% arima(order=c(2,1,1)) 
+      ## AIC = -109.16
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% arima(order=c(3,1,0))
+      ## AIC = -69.08
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% arima(order=c(1,1,0))
+      ## AIC = -62.85
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% arima(order=c(1,1,1))
+      ## AIC = -107.49
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% arima(order=c(2,1,2))
+      ## AIC = -108.35
+
+            
 ##  d. Choose what you think is the best model and check the
 ##     residual diagnostics;
 ##
+##     According to AIC, ARIMA(2,1,0) is the best model.
+      BoxCox(usgdp, BoxCox.lambda(usgdp)) %>% diff() %>% arima(order=c(2,1,1)) %>% checkresiduals()
+      ## The model passed the ljung-box test. The historgram doesn't look exactly normal.
+      
 ##  e. Produce forecasts of your fitted model. Do the forecasts
 ##     look reasonable?
-##
+      usgdp %>% auto.arima() %>% forecast(h=10) %>% autoplot()
+##    The forecast points look reasonable.
+      
 ##  f. Compare the results with what you would obtain using
 ##     ets() with no transformation.
+      
+      usgdp %>% ets %>% forecast(h=10) %>% autoplot()
+      
+## ARIMA forecast points are higher than the ETS.
+      
